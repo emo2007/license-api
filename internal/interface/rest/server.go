@@ -9,9 +9,9 @@ import (
 
 	"github.com/emo2007/block-accounting/examples/license-api/internal/pkg/config"
 	"github.com/emo2007/block-accounting/examples/license-api/internal/pkg/logger"
+	"github.com/emo2007/block-accounting/examples/license-api/internal/usecases/repository"
 	"github.com/go-chi/chi/v5"
 	mw "github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
 )
 
 type Server struct {
@@ -25,16 +25,20 @@ type Server struct {
 
 	closeMu sync.RWMutex
 	closed  bool
+
+	repo *repository.Repository
 }
 
 func NewServer(
 	log *slog.Logger,
 	conf config.RestConfig,
+	repo *repository.Repository,
 ) *Server {
 	s := &Server{
 		log:  log,
 		addr: conf.Address,
 		tls:  conf.TLS,
+		repo: repo,
 	}
 
 	s.buildRouter()
@@ -73,9 +77,7 @@ func (s *Server) buildRouter() {
 	router.Use(mw.RequestID)
 	router.Use(s.handleMw)
 
-	router.Use(render.SetContentType(render.ContentTypeJSON))
-
-	router.Get("/")
+	router.Get("/musicians/payout", s.handle(s.handleGetPlayout, "payout"))
 
 	s.Mux = router
 }
@@ -98,7 +100,6 @@ func (s *Server) handle(
 			return
 		}
 
-		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
 		if _, err = w.Write(out); err != nil {
@@ -137,8 +138,6 @@ func (s *Server) handleMw(next http.Handler) http.Handler {
 		if s.closed { // keep mutex closed
 			return
 		}
-
-		w.Header().Add("Content-Type", "application/json")
 
 		next.ServeHTTP(w, r)
 	}

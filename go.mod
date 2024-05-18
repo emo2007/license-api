@@ -3,15 +3,16 @@ module github.com/emo2007/block-accounting/examples/license-api
 go 1.22.2
 
 require (
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/fatih/color v1.17.0
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/render v1.0.3
 	github.com/google/uuid v1.6.0
+	github.com/lib/pq v1.10.9
 	github.com/urfave/cli/v2 v2.27.2
 )
 
 require (
-	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect

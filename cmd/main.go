@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
+	"github.com/emo2007/block-accounting/examples/license-api/internal/factory"
 	"github.com/emo2007/block-accounting/examples/license-api/internal/pkg/config"
+	"github.com/emo2007/block-accounting/examples/license-api/internal/pkg/logger"
 	cli "github.com/urfave/cli/v2"
 )
 
@@ -68,9 +68,6 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-			defer stop()
-
 			config := config.Config{
 				Common: config.CommonConfig{
 					LogLevel:     c.String("log-level"),
@@ -98,17 +95,23 @@ func main() {
 
 			fmt.Println(config)
 
-			service, cleanup, err := factory.ProvideService(config)
+			lb := logger.LoggerBuilder{}
+
+			service, cleanup, err := factory.NewService(
+				lb.WithLevel(
+					logger.MapLevel(config.Common.LogLevel),
+				).WithSource().Build(),
+				config,
+			)
 			if err != nil {
 				panic(err)
 			}
 
 			defer func() {
 				cleanup()
-				service.Stop()
 			}()
 
-			if err = service.Run(ctx); err != nil {
+			if err = service.Serve(context.TODO()); err != nil {
 				return err
 			}
 

@@ -1,45 +1,44 @@
 version: '3'
-networks:
-  blockd-net:
-    name: blockd-net
-    driver: bridge
+# networks:
+#   blockd-net:
+#     name: blockd-net
+#     driver: bridge
 
 volumes:
   license-api-data: {}
-  prometheus_data: {}
 
 services:
   license-api:
     container_name: license-api
-    image: blockd:latest
+    image: license-api:latest
     ports:
-      - 3112:3112
-    networks:
-      - blockd-net
-    depends_on:
-      blockd-db:
-        condition: service_healthy
-    profiles: [blockd]
+      - 3112:8080
+    # networks:
+    #   - blockd-net
+    # depends_on:
+    #   license-api-db:
+    #     condition: service_healthy
+    profiles: [license]
 
-  license-api-db:
-    container_name: license-api-db
-    image: postgres:16
-    restart: always
-    environment:
-      - POSTGRES_USER=blockd
-      - POSTGRES_PASSWORD=blockd
-      - POSTGRES_DB=blockd
-    volumes:
-      - blockd-data:/var/lib/postgresql/data
-      - ./migrations/blockd.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - 8433:5432
-    networks:
-      - blockd-net
-    healthcheck:
-      test: pg_isready -U blockd -d blockd
-      interval: 1s
-      timeout: 5s
-      retries: 10
-      start_period: 5s
-    profiles: [blockd, database, noback]
+  # license-api-db:
+  #   container_name: license-api-db
+  #   image: postgres:16
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_USER=blockd
+  #     - POSTGRES_PASSWORD=blockd
+  #     - POSTGRES_DB=blockd
+  #   volumes:
+  #     - license-api-data:/var/lib/postgresql/data
+  #     - ./migrations/licensesapi.sql:/docker-entrypoint-initdb.d/init.sql
+  #   ports:
+  #     - 8433:5432
+  #   networks:
+  #     - blockd-net
+  #   healthcheck:
+  #     test: pg_isready -U blockd -d blockd
+  #     interval: 1s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 5s
+  #   profiles: [license, database, noback]
